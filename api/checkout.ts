@@ -1,8 +1,9 @@
-export default async function handler(req, res) {
-    // CORS Headers supaya bisa diakses dari Framer
-    const allowedOrigin = "https://mpiprototype.framer.website" // ganti sesuai domain kamu
+import type { NextApiRequest, NextApiResponse } from "next"
+const midtransClient = require("midtrans-client")
 
-    res.setHeader("Access-Control-Allow-Origin", allowedOrigin)
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // 🔐 CORS FIX
+    res.setHeader("Access-Control-Allow-Origin", "https://mpiprototype.framer.website")
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
     res.setHeader("Access-Control-Allow-Headers", "Content-Type")
 
@@ -14,7 +15,11 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: "Method not allowed" })
     }
 
-    const midtransClient = require("midtrans-client")
+    // 🔐 CEK SERVER KEY ADA
+    if (!process.env.MIDTRANS_SERVER_KEY) {
+        console.error("❌ MIDTRANS_SERVER_KEY is missing")
+        return res.status(500).json({ error: "Missing Midtrans server key" })
+    }
 
     const snap = new midtransClient.Snap({
         isProduction: false,
@@ -26,7 +31,7 @@ export default async function handler(req, res) {
         const transaction = await snap.createTransaction(parameter)
         return res.status(200).json({ token: transaction.token })
     } catch (error) {
-        console.error("Midtrans Error:", error)
+        console.error("❌ Midtrans Error:", error)
         return res.status(500).json({ error: "Failed to create transaction" })
     }
 }
