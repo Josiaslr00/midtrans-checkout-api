@@ -1,34 +1,32 @@
 export default async function handler(req, res) {
-    // CORS headers untuk mengizinkan request dari Framer
-    res.setHeader('Access-Control-Allow-Origin', 'https://miprototype.framer.website'); // ganti '*' ke domain kamu kalau udah live
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    // CORS Headers supaya bisa diakses dari Framer
+    const allowedOrigin = "https://mpiprototype.framer.website" // ganti sesuai domain kamu
 
-    // Handle preflight (OPTIONS)
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin)
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+
+    if (req.method === "OPTIONS") {
+        return res.status(200).end()
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method not allowed' });
+    if (req.method !== "POST") {
+        return res.status(405).json({ message: "Method not allowed" })
     }
 
-    const midtransClient = require('midtrans-client');
+    const midtransClient = require("midtrans-client")
 
-    // Inisialisasi Snap instance Midtrans
     const snap = new midtransClient.Snap({
         isProduction: false,
-        serverKey: process.env.MIDTRANS_SERVER_KEY, // ⬅️ jangan lupa set di Environment Variables Vercel
-    });
+        serverKey: process.env.MIDTRANS_SERVER_KEY,
+    })
 
     try {
-        const parameter = req.body;
-
-        const transaction = await snap.createTransaction(parameter);
-
-        return res.status(200).json({ token: transaction.token });
+        const parameter = req.body
+        const transaction = await snap.createTransaction(parameter)
+        return res.status(200).json({ token: transaction.token })
     } catch (error) {
-        console.error('Midtrans Error:', error);
-        return res.status(500).json({ error: 'Failed to create transaction' });
+        console.error("Midtrans Error:", error)
+        return res.status(500).json({ error: "Failed to create transaction" })
     }
 }
