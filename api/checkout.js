@@ -1,54 +1,34 @@
 export default async function handler(req, res) {
-    // ✅ Allow CORS from anywhere (can restrict later)
-    res.setHeader("Access-Control-Allow-Origin", "*")
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type")
+    // CORS headers untuk mengizinkan request dari Framer
+    res.setHeader('Access-Control-Allow-Origin', 'https://miprototype.framer.website'); // ganti '*' ke domain kamu kalau udah live
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // ✅ Handle preflight request (CORS)
-    if (req.method === "OPTIONS") {
-        return res.status(200).end()
+    // Handle preflight (OPTIONS)
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
 
-    // ✅ Reject non-POST requests
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method Not Allowed" })
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    // ✅ Midtrans server key (from Vercel ENV settings)
-    const SERVER_KEY = process.env.SERVER_KEY
+    const midtransClient = require('midtrans-client');
 
-    if (!SERVER_KEY) {
-        return res.status(500).json({ error: "SERVER_KEY not set" })
-    }
+    // Inisialisasi Snap instance Midtrans
+    const snap = new midtransClient.Snap({
+        isProduction: false,
+        serverKey: process.env.MIDTRANS_SERVER_KEY, // ⬅️ jangan lupa set di Environment Variables Vercel
+    });
 
     try {
-        const midtransResponse = await fetch(
-            "https://app.sandbox.midtrans.com/snap/v1/transactions",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                    Authorization:
-                        "Basic " +
-                        Buffer.from(SERVER_KEY + ":").toString("base64"),
-                },
-                body: JSON.stringify(req.body),
-            }
-        )
+        const parameter = req.body;
 
-        const data = await midtransResponse.json()
+        const transaction = await snap.createTransaction(parameter);
 
-        if (!midtransResponse.ok) {
-            return res
-                .status(midtransResponse.status)
-                .json({ error: "Midtrans Error", details: data })
-        }
-
-        // ✅ Send Snap token back to frontend
-        return res.status(200).json(data)
-    } catch (err) {
-        console.error("Midtrans Checkout Error:", err)
-        return res.status(500).json({ error: "Server Error", details: err })
+        return res.status(200).json({ token: transaction.token });
+    } catch (error) {
+        console.error('Midtrans Error:', error);
+        return res.status(500).json({ error: 'Failed to create transaction' });
     }
 }
