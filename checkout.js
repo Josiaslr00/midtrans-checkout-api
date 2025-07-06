@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const SERVER_KEY = 'SB-Mid-server-OMbsRu_K2fz5lbNdKV5lseVC' // Replace this securely later
+  const SERVER_KEY = 'process.env.SERVER_KEY' // Replace this securely later
 
   const response = await fetch('https://app.sandbox.midtrans.com/snap/v1/transactions', {
     method: 'POST',
