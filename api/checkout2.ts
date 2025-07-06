@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         customer_details: req.body.customer_details,
         enabled_payments: ["gopay", "shopeepay", "bank_transfer"],
         callbacks: {
-            finish: "https://yourwebsite.com/thankyou", // ⬅️ ganti ini
+            finish: "https://mpiprototype.framer.website", // ⬅️ ganti ini
         },
     }
 
