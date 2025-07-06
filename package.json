@@ -1,0 +1,8 @@
+{
+  "name": "midtrans-checkout-api",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "midtrans-client": "^1.3.0"
+  }
+}
