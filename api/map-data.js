@@ -1,5 +1,3 @@
-// /api/map-data.js
-
 let latestData = {
   lat: -6.2297281,
   lng: 106.6894302,
@@ -7,16 +5,15 @@ let latestData = {
   place: "Jakarta"
 };
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method === "POST") {
-    const { lat, lng, zoom, place } = req.body;
-    latestData = { lat, lng, zoom, place };
-    return res.status(200).json({ success: true });
+    latestData = req.body;
+    return res.status(200).json({ status: "updated", data: latestData });
   }
 
   if (req.method === "GET") {
     return res.status(200).json(latestData);
   }
 
-  return res.status(405).json({ message: "Method not allowed" });
+  return res.status(405).json({ error: "Method Not Allowed" });
 }
